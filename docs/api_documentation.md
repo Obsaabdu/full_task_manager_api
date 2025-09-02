@@ -1,7 +1,7 @@
 # Task Manager API Documentation
 
 ## Overview
-The Task Manager API is a RESTful service built with Go and Gin for managing tasks. It allows clients to create, read, update, and delete tasks, each with properties such as title, description, due date, and status. Task status is an enum: Pending, In-progress, or Completed. IDs are integers and request/response formats use DTOs.
+The Task Manager API is a RESTful service built with Go and Gin for managing tasks. It allows clients to create, read, update, and delete tasks, each with properties such as title, description, due date, and status. Task status is an enum: Pending, In-progress, or Completed. IDs are MongoDB ObjectIDs and request/response formats use DTOs. Data is stored in MongoDB.
 
 ## Base URL
 ```
@@ -20,7 +20,7 @@ http://localhost:8080
 ### Get Task by ID
 - **URL:** `/tasks/:id`
 - **Method:** `GET`
-- **Description:** Returns a single task by its integer ID.
+- **Description:** Returns a single task by its MongoDB ObjectID.
 - **Response:**
   - `200 OK`: Task object
   - `404 Not Found`: Task not found
@@ -38,13 +38,13 @@ http://localhost:8080
   }
   ```
 - **Response:**
-  - `201 Created`: Created task object
+  - `201 Created`: Created task object (with ObjectID)
   - `400 Bad Request`: Invalid input
 
 ### Update Task
 - **URL:** `/tasks/:id`
 - **Method:** `PUT`
-- **Description:** Updates an existing task by integer ID. You may update title, description, due date, and status.
+- **Description:** Updates an existing task by ObjectID. You may update title, description, due date, and status.
 - **Request Body:**
   ```json
   {
@@ -61,7 +61,7 @@ http://localhost:8080
 ### Delete Task
 - **URL:** `/tasks/:id`
 - **Method:** `DELETE`
-- **Description:** Deletes a task by integer ID.
+- **Description:** Deletes a task by ObjectID.
 - **Response:**
   - `200 OK`: Success message
   - `404 Not Found`: Task not found
@@ -77,11 +77,11 @@ const (
 )
 
 type Task struct {
-  ID          int       // Unique integer identifier
-  Title       string    // Name or title
-  Description string    // Details
-  DueDate     time.Time // Due date
-  Status      Status    // Status (Pending, In-progress, Completed)
+  ID          primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"` // MongoDB ObjectID
+  Title       string             `json:"title"` // Name or title
+  Description string             `json:"description"` // Details
+  DueDate     time.Time          `json:"due_date"` // Due date
+  Status      Status             `json:"status"` // Status (Pending, In-progress, Completed)
 }
 ```
 
@@ -103,5 +103,5 @@ All errors are returned as JSON objects with an `error` field describing the iss
   ```
 
 ## Notes
-- All data is stored in a local JSON file (`data/tasks.json`).
+- All data is stored in MongoDB.
 - The API is suitable for local development and small-scale use.
