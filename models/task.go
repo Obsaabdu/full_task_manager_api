@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Status string
 
@@ -11,9 +15,9 @@ const (
 )
 // Task represents a single task with its properties.
 type Task struct {
-	ID 				int 		`json:"id"`
-	Title 			string 		`json:"title"`
-	Description 	string 		`json:"description"`
-	DueDate 		time.Time 	`json:"due_date"`
-	Status 			Status 		`json:"status"`
+	ID 				primitive.ObjectID	`json:"id,omitempty" bson:"_id,omitempty"`
+	Title 			string 				`json:"title"`
+	Description 	string 				`json:"description"`
+	DueDate 		time.Time 			`json:"due_date"`
+	Status 			Status 				`json:"status"`
 }

@@ -12,13 +12,17 @@ import (
 func SetupRouter() *gin.Engine {
 	// Create a new Gin router
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
 
 	// Define routes for task CRUD operations
-	r.GET("/tasks", controllers.GetTasks)
-	r.GET("/tasks/:id", controllers.GetTask)
-	r.POST("/tasks", controllers.CreateTask)
-	r.PUT("/tasks/:id", controllers.UpdateTask)
-	r.DELETE("/tasks/:id", controllers.DeleteTask)
+	taskRoutes := r.Group("/tasks") 
+	{
+		taskRoutes.GET("/", controllers.GetTasks)
+		taskRoutes.GET("/:id", controllers.GetTask)
+		taskRoutes.POST("/", controllers.CreateTask)
+		taskRoutes.PUT("/:id", controllers.UpdateTask)
+		taskRoutes.DELETE("/:id", controllers.DeleteTask)
+	}
 
 	// Return the configured router
 	return r

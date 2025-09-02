@@ -1,0 +1,33 @@
+# Binaries
+/bin/
+/build/
+/dist/
+*.exe
+*.out
+*.test
+
+# Go build cache & modules
+*.log
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+*.idea/
+*.vscode/
+vendor/
+go.sum
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment & config
+.env
+*.local
+*.secret
+*.key
+
+# Coverage & testing
+*.cover
+*.cov
+coverage.txt
