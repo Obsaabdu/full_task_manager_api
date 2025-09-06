@@ -8,26 +8,43 @@ The Task Manager API is a RESTful service built with Go and Gin for managing tas
 http://localhost:8080
 ```
 
+
+## Authentication
+
+All protected endpoints require a valid JWT token in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+Obtain a token by registering and logging in:
+
+- `POST /register` — Register a new user
+- `POST /login` — Login and receive a JWT
+
 ## Endpoints
 
 ### Get All Tasks
-- **URL:** `/tasks`
+- **URL:** `/api/tasks/`
 - **Method:** `GET`
+- **Auth:** Required (JWT)
 - **Description:** Returns a list of all tasks.
 - **Response:**
   - `200 OK`: Array of task objects
 
 ### Get Task by ID
-- **URL:** `/tasks/:id`
+- **URL:** `/api/tasks/:id`
 - **Method:** `GET`
+- **Auth:** Required (JWT)
 - **Description:** Returns a single task by its MongoDB ObjectID.
 - **Response:**
   - `200 OK`: Task object
   - `404 Not Found`: Task not found
 
 ### Create Task
-- **URL:** `/tasks`
+- **URL:** `/api/tasks/`
 - **Method:** `POST`
+- **Auth:** Required (JWT)
 - **Description:** Creates a new task. The ID and status are set automatically.
 - **Request Body:**
   ```json
@@ -42,8 +59,9 @@ http://localhost:8080
   - `400 Bad Request`: Invalid input
 
 ### Update Task
-- **URL:** `/tasks/:id`
+- **URL:** `/api/tasks/:id`
 - **Method:** `PUT`
+- **Auth:** Required (JWT)
 - **Description:** Updates an existing task by ObjectID. You may update title, description, due date, and status.
 - **Request Body:**
   ```json
@@ -59,12 +77,21 @@ http://localhost:8080
   - `404 Not Found`: Task not found
 
 ### Delete Task
-- **URL:** `/tasks/:id`
+- **URL:** `/api/tasks/:id`
 - **Method:** `DELETE`
+- **Auth:** Required (JWT)
 - **Description:** Deletes a task by ObjectID.
 - **Response:**
   - `200 OK`: Success message
   - `404 Not Found`: Task not found
+### Get All Users (Admin Only)
+- **URL:** `/api/users`
+- **Method:** `GET`
+- **Auth:** Required (JWT, Admin role)
+- **Description:** Returns a list of all users. Only accessible to users with the Admin role.
+- **Response:**
+  - `200 OK`: Array of user objects
+  - `403 Forbidden`: Admins only
 
 ## Task Model
 ```go
@@ -89,15 +116,30 @@ type Task struct {
 All errors are returned as JSON objects with an `error` field describing the issue.
 
 ## Example Usage
-- Get all tasks:
+- Register a user:
   ```bash
-  curl http://localhost:8080/tasks
+  curl -X POST http://localhost:8080/register -H "Content-Type: application/json" -d '{"email":"user@example.com","password":"yourpassword"}'
   ```
-- Create a task:
+- Login and get JWT:
   ```bash
-  curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{"title":"Test","description":"Test task","due_date":"2025-08-17T12:00:00Z"}'
+  curl -X POST http://localhost:8080/login -H "Content-Type: application/json" -d '{"email":"user@example.com","password":"yourpassword"}'
   ```
-- Update a task:
+- Get all tasks (with JWT):
+  ```bash
+  curl -H "Authorization: Bearer <token>" http://localhost:8080/api/tasks/
+  ```
+- Create a task (with JWT):
+  ```bash
+  curl -X POST http://localhost:8080/api/tasks/ -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"title":"Test","description":"Test task","due_date":"2025-09-06T12:00:00Z"}'
+  ```
+- Update a task (with JWT):
+  ```bash
+  curl -X PUT http://localhost:8080/api/tasks/<id> -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"title":"Updated","status":"Completed"}'
+  ```
+- Get all users (admin only):
+  ```bash
+  curl -H "Authorization: Bearer <admin_token>" http://localhost:8080/api/users
+  ```
   ```bash
   curl -X PUT http://localhost:8080/tasks/1 -H "Content-Type: application/json" -d '{"title":"Updated","status":"Completed"}'
   ```

@@ -5,30 +5,31 @@ package data
 import (
 	"context"
 	"task_manager/models"
-	"task_manager/config"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
-func CreateTask(task models.Task) (primitive.ObjectID, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	result, err := config.TaskCollection.InsertOne(ctx, task)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-	return result.InsertedID.(primitive.ObjectID), nil
+type TaskService struct {
+	Collection *mongo.Collection
 }
 
-func GetTasks() ([]models.Task, error) {
+func (s *TaskService) CreateTask(task models.Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := config.TaskCollection.Find(ctx, bson.M{})
+	_, err := s.Collection.InsertOne(ctx, task)
+	
+	return err
+}
+
+func (s *TaskService) GetTasks() ([]models.Task, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := s.Collection.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func GetTasks() ([]models.Task, error) {
 	return tasks, nil
 }
 
-func GetTaskByID(id string) (models.Task, error) {
+func (s *TaskService) GetTaskByID(id string) (models.Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -55,11 +56,11 @@ func GetTaskByID(id string) (models.Task, error) {
 	}
 
 	var task models.Task
-	err = config.TaskCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&task)
+	err = s.Collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&task)
 	return task, err
 }
 
-func UpdateTask(id string, task models.Task) error {
+func (s *TaskService) UpdateTask(id string, task models.Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -76,11 +77,11 @@ func UpdateTask(id string, task models.Task) error {
 			"status": 		task.Status,
 		},
 	}
-	_, err = config.TaskCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	_, err = s.Collection.UpdateOne(ctx, bson.M{"_id": objID}, update)
 	return err
 }
 
-func DeleteTask(id string) error {
+func (s *TaskService) DeleteTask(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -89,6 +90,6 @@ func DeleteTask(id string) error {
 		return err
 	}
 
-	_, err = config.TaskCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	_, err = s.Collection.DeleteOne(ctx, bson.M{"_id": objID})
 	return err
 }
